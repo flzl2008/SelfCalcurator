@@ -1,0 +1,63 @@
+apply plugin: 'com.android.application'
+
+android {
+    signingConfigs {
+        release {
+            keyAlias 'mycart'
+            keyPassword '123456'
+            storeFile file('C:/Users/wjwj0/AndroidStudioProjects/mycart.jks')
+            storePassword '123456'
+        }
+    }
+    compileSdkVersion 23
+    buildToolsVersion "23.0.3"
+    defaultConfig {
+        applicationId "com.css.myapplication"
+        minSdkVersion 21
+        targetSdkVersion 23
+        versionCode 1
+        versionName "1.0"
+    }
+    buildTypes {
+        release {
+            minifyEnabled false
+            signingConfig signingConfigs.release
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+        }
+    }
+}
+
+// add begin
+android {
+    sourceSets {
+        main {
+            jni.srcDirs = []
+        }
+    }
+}
+
+
+task ndkBuild(type: Exec, description: 'Compile JNI source via NDK') {
+    def ndkDir = project.plugins.findPlugin('com.android.application').sdkHandler.getNdkFolder()
+    commandLine "$ndkDir\\ndk-build.cmd ",
+            'NDK_PROJECT_PATH=build\\intermediates\\ndk',
+            'NDK_LIBS_OUT=src\\main\\jniLibs',
+            'APP_BUILD_SCRIPT=src\\main\\jni\\Android.mk',
+            'NDK_APPLICATION_MK=src\\main\\jni\\Application.mk'
+}
+
+tasks.withType(JavaCompile) {
+    compileTask -> compileTask.dependsOn ndkBuild
+}
+// add end
+
+
+dependencies {
+    compile fileTree(include: ['*.jar'], dir: 'libs')
+    testCompile 'junit:junit:4.12'
+    compile 'com.android.support:appcompat-v7:23.3.0'
+    compile project(':openCVLibrary310')
+    compile 'com.tsengvn:Typekit:1.0.0'
+    compile 'com.google.android.gms:play-services-appindexing:8.1.0'
+    compile 'com.mcxiaoke.volley:library:1.0.17'
+}
